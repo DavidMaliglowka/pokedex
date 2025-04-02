@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pokemonIdElement = document.getElementById('pokemon-id');
     const pokemonTypesElement = document.getElementById('pokemon-types');
     const pokemonStatsElement = document.getElementById('pokemon-stats');
+    const flavorTextElement = document.getElementById('flavor-text');
 
     // D-Pad Buttons
     const dPadUp = document.getElementById('d-pad-up');
@@ -20,9 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Audio Elements
     const audioSelect = document.getElementById('audio-select');
     const audioConfirm = document.getElementById('audio-confirm');
+    const audioCry = document.getElementById('audio-cry'); // Added cry audio element
 
     const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
-    const MAX_POKEMON = 50;
+    const MAX_POKEMON = 151;
 
     let pokemonListCache = [];
     let currentPokemonIndex = -1; // Track the currently selected index (-1 means none)
@@ -42,12 +44,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Fetch and Display Pokémon List ---
     async function fetchPokemonList() {
+        const cacheKey = 'pokemonListCache';
+        const cachedData = localStorage.getItem(cacheKey); // Use localStorage
+
+        if (cachedData) {
+            console.log('Loading Pokémon list from cache...');
+            pokemonListCache = JSON.parse(cachedData);
+            displayPokemonList(pokemonListCache);
+            return; // Exit function, data loaded from cache
+        }
+
+        console.log('Fetching Pokémon list from API...');
         try {
-            // ... (fetch logic remains the same)
             const response = await fetch(`${POKEAPI_BASE_URL}?limit=${MAX_POKEMON}&offset=0`);
              if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
              const data = await response.json();
              pokemonListCache = data.results;
+            localStorage.setItem(cacheKey, JSON.stringify(pokemonListCache)); // Cache using localStorage
             displayPokemonList(pokemonListCache);
         } catch (error) {
             console.error("Could not fetch Pokémon list:", error);
@@ -64,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             listItem.dataset.id = index + 1; // Use 1-based ID for dataset
 
             listItem.addEventListener('click', () => {
-                playSound(audioSelect); // Play select sound on click
+                // playSound(audioSelect); // Play select sound on click
                 selectPokemon(index); // Use helper function to select
             });
             pokemonListElement.appendChild(listItem);
@@ -92,30 +105,86 @@ document.addEventListener('DOMContentLoaded', () => {
             newItem.classList.add('active');
             // Scroll the list item into view
             newItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            // Fetch details using the URL from the cache
-            fetchPokemonDetails(pokemonListCache[index].url, pokemonListCache[index].name);
+            // Fetch details using the URL from the cache and pass the ID
+            const pokemonId = index + 1;
+            fetchPokemonDetails(pokemonListCache[index].url, pokemonListCache[index].name, pokemonId);
         } else {
              console.error("Could not find list item for index:", index);
         }
     }
 
 
-    // --- Fetch and Display Pokémon Details ---
-    async function fetchPokemonDetails(url, name) {
+    // --- Fetch and Display Pokémon Details --- Updated signature
+    async function fetchPokemonDetails(url, name, pokemonId) {
+        const cacheKey = `pokemonDetails_${pokemonId}`;
+        const cachedData = localStorage.getItem(cacheKey); // Use localStorage
+
         placeholderElement.textContent = 'Loading...';
         placeholderElement.style.display = 'block';
         detailsContentElement.style.display = 'none'; // Hide wrapper
         pokemonTypesElement.innerHTML = '';
         pokemonStatsElement.innerHTML = '<li class="loading">Loading stats...</li>';
 
+        if (cachedData) {
+            console.log(`Loading details for ${name} (ID: ${pokemonId}) from cache...`);
+            const pokemon = JSON.parse(cachedData);
+            displayPokemonDetails(pokemon); // Display the cached (smaller) object
+            fetchFlavorText(pokemonId); // Still fetch flavor text (or check its cache)
+            // playSound(audioConfirm);
+            return; // Exit function, data loaded from cache
+        }
+
+        console.log(`Fetching details for ${name} (ID: ${pokemonId}) from API...`);
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const pokemon = await response.json();
-            displayPokemonDetails(pokemon);
-            playSound(audioConfirm); // Play confirm sound after successful load
+            const fullPokemonData = await response.json(); // Get the full data
+
+            // Create a smaller object for caching
+            const pokemonToCache = {
+                id: fullPokemonData.id,
+                name: fullPokemonData.name,
+                sprites: {
+                    front_default: fullPokemonData.sprites.front_default,
+                    versions: {
+                        'generation-v': {
+                            'black-white': {
+                                animated: {
+                                    front_default: fullPokemonData.sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default
+                                }
+                            }
+                        }
+                    }
+                },
+                types: fullPokemonData.types.map(t => ({ type: { name: t.type.name } })), // Only keep type names
+                stats: fullPokemonData.stats.map(s => ({ base_stat: s.base_stat, stat: { name: s.stat.name } })), // Only keep stat names and base_stat
+                cries: { // Add cries to cache
+                    latest: fullPokemonData.cries?.latest,
+                    legacy: fullPokemonData.cries?.legacy
+                }
+            };
+
+            // Cache the smaller object using localStorage
+            localStorage.setItem(cacheKey, JSON.stringify(pokemonToCache));
+
+            displayPokemonDetails(pokemonToCache); // Display the smaller object
+            fetchFlavorText(pokemonId);
+            // playSound(audioConfirm); // Play confirm sound after successful load
         } catch (error) {
-            console.error(`Could not fetch details for ${name}:`, error);
+            // Handle potential quota errors during setItem as well
+            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                 console.warn(`Could not cache details for ${name}: LocalStorage quota exceeded.`);
+                 // If caching fails, try to display the full data fetched before the error
+                 if (typeof fullPokemonData !== 'undefined') {
+                    displayPokemonDetails(fullPokemonData);
+                    fetchFlavorText(pokemonId);
+                    // playSound(audioConfirm);
+                    return; // Continue without caching if display worked
+                 }
+            } else {
+                 console.error(`Could not fetch details for ${name}:`, error);
+            }
+
             placeholderElement.textContent = 'Load failed!';
             placeholderElement.style.display = 'block';
             detailsContentElement.style.display = 'none'; // Keep wrapper hidden
@@ -140,16 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onload = () => {
             pokemonSpriteElement.src = spriteSrc;
             pokemonSpriteElement.alt = pokemon.name;
+            playPokemonCry(pokemon); // Play cry when sprite loads
             pokemonSpriteElement.style.display = 'none'; // Hide briefly to reset gif
              setTimeout(() => { pokemonSpriteElement.style.display = 'block'; }, 10);
         };
         img.onerror = () => {
             pokemonSpriteElement.src = 'placeholder.png';
             pokemonSpriteElement.alt = "Sprite not found";
+            playPokemonCry(pokemon); // Attempt to play cry even if sprite fails
             pokemonSpriteElement.style.display = 'block';
         }
         img.src = spriteSrc;
-
 
         // --- Info Screen (Types & Stats - no changes needed here) ---
         // Types
@@ -176,8 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             statBarContainer.className = 'stat-bar-container';
             const statBar = document.createElement('div');
             const percentage = (statValue / maxStatValue) * 100;
-            const simpleStatName = statName.match(/^[a-z]+/)[0];
-            statBar.className = `stat-bar ${simpleStatName}`;
+            statBar.className = `stat-bar ${statName}`; // Use full statName for class
             statBar.style.width = `0%`;
             statBar.textContent = statValue;
             statBarContainer.appendChild(statBar);
@@ -190,11 +259,84 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Play Pokemon Cry --- Added this function
+    function playPokemonCry(pokemon) {
+        const cryUrl = pokemon.cries?.latest || pokemon.cries?.legacy;
+        if (cryUrl && audioCry) {
+            audioCry.src = cryUrl;
+            playSound(audioCry); // Use existing helper
+        } else {
+            console.warn('No cry audio found for this Pokemon.');
+            // Optionally play a default sound or do nothing
+        }
+    }
+
+    // --- Fetch and Display Flavor Text ---
+    async function fetchFlavorText(pokemonId) {
+        const cacheKey = `pokemonSpecies_${pokemonId}`;
+        const cachedData = localStorage.getItem(cacheKey); // Use localStorage
+        let speciesFlavorEntries = null; // Store only the entries array
+
+        flavorTextElement.textContent = 'Loading description...'; // Placeholder
+
+        if (cachedData) {
+            console.log(`Loading species data for ID ${pokemonId} from cache...`);
+            // Directly parse the stored array
+            speciesFlavorEntries = JSON.parse(cachedData);
+        } else {
+            console.log(`Fetching species data for ID ${pokemonId} from API...`);
+            try {
+                const speciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}/`;
+                const response = await fetch(speciesUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const speciesData = await response.json(); // Fetch full data
+                speciesFlavorEntries = speciesData.flavor_text_entries; // Extract only the entries
+                // Cache only the flavor text entries array
+                localStorage.setItem(cacheKey, JSON.stringify(speciesFlavorEntries));
+            } catch (error) {
+                // Handle potential quota errors during setItem as well
+                if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                     console.warn(`Could not cache species data for ID ${pokemonId}: LocalStorage quota exceeded.`);
+                     // If caching fails, just proceed without caching if fetch was successful
+                     // Need to ensure speciesFlavorEntries is populated if speciesData was fetched
+                     if (typeof speciesData !== 'undefined') {
+                         speciesFlavorEntries = speciesData.flavor_text_entries;
+                     }
+                } else {
+                    console.error(`Could not fetch flavor text for ID ${pokemonId}:`, error);
+                    flavorTextElement.textContent = 'Description unavailable.';
+                    return; // Exit if fetch failed
+                }
+            }
+        }
+
+        // Process the speciesFlavorEntries (either from cache or fresh fetch)
+        if (speciesFlavorEntries) {
+             // Find the English flavor text for the 'red' version
+            const flavorEntry = speciesFlavorEntries.find(entry =>
+                entry.language.name === 'en' && entry.version.name === 'red'
+            );
+
+            if (flavorEntry) {
+                // Clean up the flavor text (remove form feed/newlines)
+                const cleanedText = flavorEntry.flavor_text.replace(/\f|\n/g, ' ');
+                flavorTextElement.textContent = cleanedText;
+            } else {
+                // Fallback if specific entry not found
+                const fallbackEntry = speciesFlavorEntries.find(entry => entry.language.name === 'en');
+                 flavorTextElement.textContent = fallbackEntry ? fallbackEntry.flavor_text.replace(/\f|\n/g, ' ') : 'No description available.';
+            }
+        } else {
+             // This case might occur if fetch failed AND caching failed
+             flavorTextElement.textContent = 'Description unavailable.';
+        }
+    }
+
     // --- D-Pad Navigation ---
     function navigateList(direction) {
         if (pokemonListCache.length === 0) return; // No list loaded yet
 
-        playSound(audioSelect); // Play sound on D-pad press
+        // playSound(audioSelect); // Play sound on D-pad press
 
         let targetIndex = currentPokemonIndex;
 
