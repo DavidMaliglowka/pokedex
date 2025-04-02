@@ -3,37 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Pokedex</title>
+    <title>Classic Pokedex</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔴</text></svg>">
 </head>
 <body>
-    <h1>My Interactive Pokedex</h1>
+
     <div class="pokedex-container">
-        <div class="pokemon-list-container">
-            <h2>Pokémon List (1-50)</h2>
-            <ul id="pokemon-list">
-                <!-- Pokémon names will be loaded here by JS -->
-                <li class="loading">Loading Pokémon...</li>
-            </ul>
+        <!-- Left Panel (Screen and Controls) -->
+        <div class="pokedex-left">
+            <div class="hinge-lights">
+                <div class="light-blue"></div>
+                <div class="light-red small"></div>
+                <div class="light-yellow small"></div>
+                <div class="light-green small"></div>
+            </div>
+            <div class="screen-area">
+                <div class="screen-bezel">
+                    <div class="top-screen-lights">
+                        <div class="light-red tiny"></div>
+                        <div class="light-red tiny"></div>
+                    </div>
+                    <div id="main-screen" class="screen-display">
+                        <!-- Pokémon Sprite and Basic Info -->
+                        <div class="placeholder">Select a Pokémon</div>
+                        <div class="details-content" style="display: none;">
+                             <img id="pokemon-sprite" src="" alt="Pokemon Sprite">
+                             <div id="pokemon-name-id">
+                                <span id="pokemon-id">#000</span> - <span id="pokemon-name">Pokémon</span>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="bottom-screen-elements">
+                        <div class="light-red medium"></div>
+                        <div class="speaker-grille">
+                            <div></div><div></div><div></div><div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls-area">
+                <div class="control-button-black"></div>
+                <div class="control-buttons-sg">
+                    <div class="button-select"></div>
+                    <div class="button-start"></div>
+                </div>
+                <div class="d-pad">
+                    <div class="d-pad-center"></div>
+                    <div class="d-pad-up"></div>
+                    <div class="d-pad-down"></div>
+                    <div class="d-pad-left"></div>
+                    <div class="d-pad-right"></div>
+                </div>
+                <div class="screen-green">
+                     <!-- List Title Area -->
+                     <h2 id="list-title">Pokémon List</h2>
+                </div>
+            </div>
         </div>
 
-        <div class="pokemon-display-container">
-            <div id="pokemon-details" class="pokemon-card">
-                <div class="placeholder">Select a Pokémon from the list</div>
-                <!-- Details will be loaded here -->
-                <!-- Example structure (hidden initially) -->
-                 <div class="details-content" style="display: none;">
-                    <h2 id="pokemon-name"></h2>
-                    <p id="pokemon-id"></p>
-                    <div class="image-container">
-                         <img id="pokemon-sprite" src="" alt="Pokemon Sprite">
-                    </div>
-                    <div id="pokemon-types"></div>
-                    <h3>Base Stats</h3>
-                    <ul id="pokemon-stats"></ul>
+        <!-- Hinge -->
+        <div class="pokedex-hinge"></div>
+
+        <!-- Right Panel (Data and List) -->
+        <div class="pokedex-right">
+             <div class="info-screen">
+                 <!-- Pokémon Types -->
+                 <div id="pokemon-types" class="info-section">
+                     <!-- Types Loaded Here -->
                  </div>
-            </div>
+                 <!-- Pokémon Stats -->
+                 <div id="pokemon-stats-container" class="info-section">
+                     <h3 class="stats-title">Base Stats</h3>
+                     <ul id="pokemon-stats">
+                         <!-- Stats Loaded Here -->
+                     </ul>
+                 </div>
+             </div>
+
+             <div class="blue-button-grid">
+                <!-- Decorative blue buttons (or potential future list controls) -->
+                <div class="blue-button"></div> <div class="blue-button"></div>
+                <div class="blue-button"></div> <div class="blue-button"></div>
+                <div class="blue-button"></div> <div class="blue-button"></div>
+                <div class="blue-button"></div> <div class="blue-button"></div>
+                <div class="blue-button"></div> <div class="blue-button"></div>
+             </div>
+
+             <!-- Pokémon List (Scrollable) -->
+             <div class="pokemon-list-container">
+                 <ul id="pokemon-list">
+                     <li class="loading">Loading...</li>
+                 </ul>
+             </div>
+
+             <div class="bottom-right-controls">
+                 <div class="white-button"></div>
+                 <div class="white-button"></div>
+                 <div class="light-yellow medium"></div>
+                 <div class="dark-button"></div>
+             </div>
+             <div class="right-dots">
+                <div></div><div></div>
+             </div>
         </div>
     </div>
 
