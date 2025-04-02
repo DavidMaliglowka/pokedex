@@ -1,1 +1,2 @@
 # pokedex
+A basic pokédex
