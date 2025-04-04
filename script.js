@@ -26,6 +26,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
     const MAX_POKEMON = 151;
 
+    // === Add this to the Pokedex's JavaScript (e.g., script.js) ===
+
+    // --- iframe Controls Configuration ---
+    const PARENT_SITE_ORIGIN = 'https://davidmaliglowka.com';
+
+    // --- Escape Key Listener ---
+    window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        // Check if running inside an iframe (optional but good practice)
+        if (window.self !== window.top) {
+            console.log('Escape pressed inside Pokedex iframe, sending message to parent:', PARENT_SITE_ORIGIN);
+            window.parent.postMessage('escapePressed', PARENT_SITE_ORIGIN);
+        }
+    }
+    });
+
     let pokemonListCache = [];
     let currentPokemonIndex = -1; // Track the currently selected index (-1 means none)
 
