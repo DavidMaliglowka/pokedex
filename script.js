@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // === Add this to the Pokedex's JavaScript (e.g., script.js) ===
 
     // --- iframe Controls Configuration ---
-    const PARENT_SITE_ORIGIN = 'https://davidmaliglowka.com';
+    const PARENT_SITE_ORIGIN = 'https://www.davidmaliglowka.com';
 
     // --- Escape Key Listener ---
     window.addEventListener('keydown', (event) => {
