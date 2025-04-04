@@ -46,23 +46,33 @@
                 </div>
             </div>
             <div class="controls-area">
-                 <!-- ... (black button, select/start) ... -->
-                <div class="control-button-black"></div>
-                <div class="control-buttons-sg">
-                    <div class="button-select"></div>
-                    <div class="button-start"></div>
+                <!-- Row 1: Buttons -->
+                <div class="controls-row">
+                    <div id="encounter-button" class="control-button-black"></div>
+                    <div class="control-buttons-sg">
+                        <div class="button-select"></div>
+                        <div class="button-start"></div>
+                    </div>
                 </div>
-                <!-- Updated: Added IDs to D-Pad -->
-                <div class="d-pad">
-                    <div class="d-pad-center"></div>
-                    <div id="d-pad-up" class="d-pad-up"></div>
-                    <div id="d-pad-down" class="d-pad-down"></div>
-                    <div id="d-pad-left" class="d-pad-left"></div>
-                    <div id="d-pad-right" class="d-pad-right"></div>
+
+                <!-- Row 2: Dots, Screen, D-Pad -->
+                <div class="controls-row">
+                    <div class="mobile-dots-left"><div></div><div></div></div>
+                    <div class="screen-green">
+                        <p id="flavor-text"> </p>
+                    </div>
+                    <div class="d-pad">
+                        <div class="d-pad-center"></div>
+                        <div id="d-pad-up" class="d-pad-up"></div>
+                        <div id="d-pad-down" class="d-pad-down"></div>
+                        <div id="d-pad-left" class="d-pad-left"></div>
+                        <div id="d-pad-right" class="d-pad-right"></div>
+                    </div>
                 </div>
-                 <!-- ... (green screen) ... -->
-                 <div class="screen-green">
-                     <p id="flavor-text"> </p>
+
+                 <!-- Row 3: Bottom Lines -->
+                 <div class="controls-row controls-row-bottom-lines">
+                     <div class="mobile-lines-bottom"><div></div><div></div></div>
                  </div>
             </div>
         </div>

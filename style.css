@@ -20,6 +20,7 @@ body {
     display: flex;
     width: 100%;
     max-width: 900px; /* Adjust as needed */
+    min-width: 320px; /* Added minimum width */
     min-height: 600px;
     background-color: #dc0a2d; /* Pokedex Red */
     border-radius: 15px 15px 15px 50px / 15px 15px 15px 15px; /* Rounded top, sharper bottom-left */
@@ -37,7 +38,7 @@ body {
 }
 
 .pokedex-left {
-    flex-basis: 55%; /* Left side is slightly wider */
+    flex-basis: 50%; /* Left side is slightly wider */
     border-right: 2px solid #a00820; /* Simulates closed hinge line */
 }
 
@@ -182,59 +183,132 @@ body {
 
 /* Controls Area */
 .controls-area {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* New: 2 equal columns */
-    grid-template-rows: auto auto auto; /* New: 3 rows */
-    gap: 10px; /* Reduced gap slightly */
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between rows */
+    padding: 15px 5px; /* Padding around controls */
+}
+
+/* Style for each row */
+.controls-row {
+    display: flex;
+    align-items: center; /* Vertically align items in the row */
+    gap: 10px; /* Default gap between items in a row */
+}
+
+/* Adjustments for specific rows/elements */
+.controls-row:first-of-type { /* Row 1: Buttons */
+    justify-content: flex-start; /* Align items to the start */
+    padding: 0 10px;
+}
+
+.controls-row:nth-of-type(2) { /* Row 2: Dots, Screen, D-pad */
     align-items: center;
-    flex-grow: 1; /* Take remaining vertical space */
+    justify-content: space-between;
+}
+
+.controls-row-bottom-lines { /* Row 3: Lines */
+    justify-content: flex-end;
+    padding-right: 25px;
+    min-height: 10px;
 }
 
 .control-button-black {
-    grid-row: 1; /* New: Row 1 */
-    grid-column: 1; /* New: Column 1 */
-    width: 50px;
-    height: 50px;
-    background-color: #333;
-    border-radius: 50%;
-    border: 3px solid #111;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.7);
-    justify-self: center; /* Center in its grid cell */
+    /* Ensure it's visible */
+    width: 50px; height: 50px; background-color: #333; border-radius: 50%; border: 3px solid #111; box-shadow: inset 0 0 5px rgba(0,0,0,0.7);
 }
-
 .control-buttons-sg {
     grid-column: 2; /* New: Column 2 */
     grid-row: 1; /* New: Row 1 */
     display: flex;
     gap: 10px;
-    justify-content: center;
+    /* justify-content: center; */
+    justify-self: start; /* Align to start */
 }
+/* Colors and sizes for buttons remain */
 .button-select, .button-start {
     width: 50px;
     height: 15px;
     background-color: #555;
     border-radius: 10px;
-    border: 1px solid #222;
+    /* border: 1px solid #222; */
+    border: 3px solid #111; /* Thicker border */
     box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
 }
+
+    .button-select { background-color: #c00; border-color: #800; }
+    .button-start { background-color: #3b83bd; border-color: #2a5a8a; }
 /* Could add text via pseudo-elements if desired */
 
+.mobile-dots-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex-shrink: 0;
+    position: relative;
+    /* Ensure base D-pad styles are present */
+    /* background-color: #333; */ /* Removed background from container */
+}
+.mobile-dots-left div {
+    width: 6px;
+    height: 6px;
+    background-color: #333;
+    border-radius: 50%;
+}
+
 .screen-green {
-    grid-row: 2; /* New: Row 2 */
-    grid-column: 1; /* New: Column 1 */
-    background-color: #9bbc0f; /* Gameboy green */
-    width: 300px; /* Set fixed width */
-    min-height: 70px; /* Increased height */
-    border-radius: 5px;
-    border: 2px solid #306230;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+    /* width: auto; */
+    /* flex-grow: 1; */
+    width: 250px; /* Set a fixed width */
+    /* max-width: 200px; */
+    min-height: 80px;
+    /* Styles remain */
+    background-color: #9bbc0f; border: 2px solid #306230; border-radius: 5px; padding: 8px; overflow-y: auto;
+    display: flex; justify-content: center; align-items: flex-start; text-align: center;
+}
+.d-pad {
+    grid-row: 2;
+    grid-column: 2;
+    width: 80px;
+    height: 80px;
+    position: relative;
     justify-self: center;
-    display: flex; /* Center text inside */
-    justify-content: center;
-    align-items: flex-start; /* Align text to top for scrolling */
-    padding: 8px; /* Adjusted padding */
-    text-align: center; /* Center text */
-    overflow-y: auto; /* Enable vertical scrolling */
+}
+/* Ensure inner D-pad parts are visible too */
+.d-pad div {
+    /* background-color: #333; */ /* Remove background from inner parts too if base is removed */
+    position: absolute;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+    border: 1px solid #111;
+}
+/* Re-apply background to the actual d-pad pieces */
+.d-pad-up, .d-pad-down, .d-pad-left, .d-pad-right {
+    background-color: #333; /* Background for the cross pieces */
+    cursor: pointer; /* Indicate interactivity */
+}
+.d-pad-center {
+    width: 26px; height: 26px; top: 27px; left: 27px; border-radius: 50%; z-index: 1;
+    background-color: #333; /* Background for the center piece */
+}
+/* Keep specific positioning styles */
+/* .d-pad-up, .d-pad-down, .d-pad-left, .d-pad-right { */
+    /* cursor: pointer; */ /* Indicate interactivity */
+/* } */
+
+.mobile-lines-bottom {
+    display: flex;
+    gap: 3px;
+}
+.d-pad-up { width: 24px; height: 32px; top: 0; left: 28px; border-radius: 5px 5px 0 0; }
+.d-pad-down { width: 24px; height: 32px; bottom: 0; left: 28px; border-radius: 0 0 5px 5px; }
+.d-pad-left { width: 32px; height: 24px; top: 28px; left: 0; border-radius: 5px 0 0 5px; }
+.d-pad-right { width: 32px; height: 24px; top: 28px; right: 0; border-radius: 0 5px 5px 0; }
+
+.mobile-lines-bottom div {
+    width: 10px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 1px;
 }
 
 /* Style for the new flavor text paragraph */
@@ -244,34 +318,6 @@ body {
     font-family: monospace; /* Give it a techy feel */
     line-height: 1.3; /* Improve readability */
 }
-
-/* D-Pad */
-.d-pad {
-    grid-row: 2; /* New: Row 2 */
-    grid-column: 2; /* New: Column 2 */
-    width: 80px;
-    height: 80px;
-    position: relative;
-    justify-self: center; /* Center in grid cell */
-}
-
-.d-pad div {
-    background-color: #333;
-    position: absolute;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
-    border: 1px solid #111;
-}
-.d-pad-center {
-    width: 26px; height: 26px; top: 27px; left: 27px; border-radius: 50%; z-index: 1;
-}
-.d-pad-up, .d-pad-down, .d-pad-left, .d-pad-right {
-    cursor: pointer; /* Indicate interactivity */
-}
-.d-pad-up { width: 24px; height: 32px; top: 0; left: 28px; border-radius: 5px 5px 0 0; }
-.d-pad-down { width: 24px; height: 32px; bottom: 0; left: 28px; border-radius: 0 0 5px 5px; }
-.d-pad-left { width: 32px; height: 24px; top: 28px; left: 0; border-radius: 5px 0 0 5px; }
-.d-pad-right { width: 32px; height: 24px; top: 28px; right: 0; border-radius: 0 5px 5px 0; }
-
 
 /* --- Right Panel Elements --- */
 
@@ -533,6 +579,7 @@ body {
      .pokedex-right {
          padding-top: 20px; /* Reduce top padding */
          border-radius: 0 0 10px 10px;
+         display: none; /* Hide right panel on mobile */
      }
     .pokedex-hinge { display: none; } /* Hide hinge */
 
@@ -540,14 +587,52 @@ body {
     #pokemon-sprite { width: 90px; height: 90px; } /* Adjust if needed */
     .info-screen { height: 180px; }
     .pokemon-list-container { height: 120px; }
-    .controls-area { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; gap: 10px; } /* Stack controls */
-    .control-button-black { grid-row: 1; grid-column: 1; }
-    .control-buttons-sg { grid-row: 1; grid-column: 2; }
-    .screen-green { grid-row: 2; grid-column: 1;}
-    .d-pad { grid-row: 2; grid-column: 2; width: 70px; height: 70px; }
-    .d-pad-center { width: 22px; height: 22px; top: 24px; left: 24px; }
-    .d-pad-up, .d-pad-down { width: 20px; height: 28px; left: 25px; }
-    .d-pad-left, .d-pad-right { width: 28px; height: 20px; top: 25px; }
+    .controls-area {
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Space between rows */
+        padding: 15px 5px; /* Padding around controls */
+    }
+    .control-button-black {
+        /* No flex specific styles needed if parent handles spacing */
+    }
+    .control-buttons-sg {
+        /* display: flex already set */
+    }
+    /* Colors for buttons remain */
+    .button-select { background-color: #c00; border-color: #800; }
+    .button-start { background-color: #3b83bd; border-color: #2a5a8a; }
+
+    .screen-green {
+        width: auto; /* Allow flexbox to size */
+        flex-grow: 1; /* Allow screen to take up space */
+        max-width: 250px; /* Limit max width */
+        min-height: 84px;
+    }
+    .d-pad {
+        width: 80px; height: 80px;
+        flex-shrink: 0; /* Prevent d-pad from shrinking */
+    }
+
+    .mobile-dots-left {
+        margin-bottom: 0; /* Remove grid margin */
+    }
+    .mobile-dots-left div {
+        width: 6px;
+        height: 6px;
+        background-color: #333;
+        border-radius: 50%;
+    }
+
+    .mobile-lines-bottom {
+        margin-top: 0; /* Remove grid margin */
+    }
+    .mobile-lines-bottom div {
+        width: 10px;
+        height: 3px;
+        background-color: #333;
+        border-radius: 1px;
+    }
 }
 
 @media (max-width: 480px) {
