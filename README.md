@@ -1,2 +1,2 @@
 # pokedex
-A basic pokédex
+A basic pokédex. Powered by [PokèAPI](https://pokeapi.co/). 
