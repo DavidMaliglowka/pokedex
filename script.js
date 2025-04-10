@@ -356,21 +356,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let targetIndex = currentPokemonIndex;
 
-        if (direction === 'up' || direction === 'left') {
+        if (direction === 'up') {
             targetIndex--;
-        } else if (direction === 'down' || direction === 'right') {
+        } else if (direction === 'down') {
             targetIndex++;
+        } else if (direction === 'left') {
+            targetIndex -= 10; // Jump back 10
+        } else if (direction === 'right') {
+            targetIndex += 10; // Jump forward 10
         }
 
         // Handle boundaries (stay within 0 to MAX_POKEMON-1)
         if (targetIndex < 0) {
-            targetIndex = 0; // Stop at the first item
-            // Optional: Wrap around
-            // targetIndex = pokemonListCache.length - 1;
+            // targetIndex = 0; // Stop at the first item
+            targetIndex = pokemonListCache.length - 1; // Wrap around to the last item
         } else if (targetIndex >= pokemonListCache.length) {
-            targetIndex = pokemonListCache.length - 1; // Stop at the last item
-            // Optional: Wrap around
-            // targetIndex = 0;
+            // targetIndex = pokemonListCache.length - 1; // Stop at the last item
+            targetIndex = 0; // Wrap around to the first item
         }
 
         // Only select if the index actually changed
