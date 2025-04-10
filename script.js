@@ -67,6 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Loading Pokémon list from cache...');
             pokemonListCache = JSON.parse(cachedData);
             displayPokemonList(pokemonListCache);
+
+            // Pre-cache Bulbasaur (1) and Caterpie (10) after list is ready
+            fetchAndCachePokemonDetails(1); 
+            fetchAndCachePokemonDetails(10);
+
             return; // Exit function, data loaded from cache
         }
 
@@ -78,6 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
              pokemonListCache = data.results;
             localStorage.setItem(cacheKey, JSON.stringify(pokemonListCache)); // Cache using localStorage
             displayPokemonList(pokemonListCache);
+
+            // Pre-cache Bulbasaur (1) and Caterpie (10) after list is ready
+            fetchAndCachePokemonDetails(1); 
+            fetchAndCachePokemonDetails(10);
+
         } catch (error) {
             console.error("Could not fetch Pokémon list:", error);
             pokemonListElement.innerHTML = '<li class="error">Failed to load list.</li>';
@@ -100,12 +110,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Select Pokémon Helper Function ---
+    // --- Select Pokémon Helper Function --- Updated signature
     function selectPokemon(index) {
         if (index < 0 || index >= pokemonListCache.length) {
             console.warn("Index out of bounds:", index);
             return; // Invalid index
         }
+
+        // --- Play Cry if Navigating and Cached ---
+        const pokemonIdToPlay = index + 1;
+        const cacheKey = `pokemonDetails_${pokemonIdToPlay}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+            try {
+                const pokemonData = JSON.parse(cachedData);
+                playPokemonCry(pokemonData);
+            } catch (e) {
+                console.error("Error parsing cached data for D-pad cry playback", e);
+            }
+        }
+        // --- End D-pad Cry Playback ---
 
         currentPokemonIndex = index; // Update current index
 
@@ -122,13 +146,121 @@ document.addEventListener('DOMContentLoaded', () => {
             // Scroll the list item into view
             newItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             // Fetch details using the URL from the cache and pass the ID
-            const pokemonId = index + 1;
-            fetchPokemonDetails(pokemonListCache[index].url, pokemonListCache[index].name, pokemonId);
+            const pokemonIdToFetch = index + 1;
+            fetchPokemonDetails(pokemonListCache[index].url, pokemonListCache[index].name, pokemonIdToFetch);
         } else {
              console.error("Could not find list item for index:", index);
         }
+
+        // Pre-cache neighbors after selection
+        preCacheNeighbors(index);
     }
 
+    // --- Helper Function to Fetch and Cache Minimal Details for a specific ID ---
+    async function fetchAndCachePokemonDetails(pokemonId) {
+        const cacheKey = `pokemonDetails_${pokemonId}`;
+        // Only fetch if not already cached
+        if (!localStorage.getItem(cacheKey)) {
+            // Find the pokemon reference in the list cache
+            // Ensure the list cache is populated before calling this
+            const listIndex = pokemonId - 1;
+            if (listIndex < 0 || listIndex >= pokemonListCache.length) {
+                console.warn(`Cannot pre-cache ID ${pokemonId}: Not found in list cache.`);
+                return;
+            }
+            const pokemonRef = pokemonListCache[listIndex];
+            if (!pokemonRef || !pokemonRef.url) {
+                 console.warn(`Cannot pre-cache ID ${pokemonId}: Invalid reference in list cache.`);
+                 return;
+            }
+
+            try {
+                const response = await fetch(pokemonRef.url);
+                if (!response.ok) throw new Error(`Failed to fetch details for pre-cache ID ${pokemonId}`);
+                const fullPokemonData = await response.json();
+
+                // Create the smaller object for caching
+                const pokemonToCache = {
+                    id: fullPokemonData.id,
+                    name: fullPokemonData.name,
+                    sprites: {
+                        front_default: fullPokemonData.sprites.front_default,
+                        versions: { 'generation-v': { 'black-white': { animated: { front_default: fullPokemonData.sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default } } } }
+                    },
+                    types: fullPokemonData.types.map(t => ({ type: { name: t.type.name } })),
+                    stats: fullPokemonData.stats.map(s => ({ base_stat: s.base_stat, stat: { name: s.stat.name } })),
+                    cries: { latest: fullPokemonData.cries?.latest, legacy: fullPokemonData.cries?.legacy }
+                };
+
+                localStorage.setItem(cacheKey, JSON.stringify(pokemonToCache));
+                console.log(`Pre-cached details for ${pokemonToCache.name} (ID: ${pokemonId})`);
+            } catch (error) {
+                if (!(error instanceof DOMException && error.name === 'QuotaExceededError')) {
+                    console.warn(`Error pre-caching details for ID ${pokemonId}:`, error);
+                }
+            }
+        }
+    }
+
+    // --- Function to Pre-cache Neighboring Pokémon Details ---
+    async function preCacheNeighbors(currentIndex) {
+        if (pokemonListCache.length === 0) return;
+
+        const indicesToCache = [];
+        // Next (+1)
+        const nextIndex = (currentIndex + 1) % pokemonListCache.length;
+        indicesToCache.push(nextIndex);
+        // Previous (-1)
+        const prevIndex = (currentIndex - 1 + pokemonListCache.length) % pokemonListCache.length;
+        indicesToCache.push(prevIndex);
+        // Next (+10)
+        const next10Index = (currentIndex + 10) % pokemonListCache.length;
+        indicesToCache.push(next10Index);
+        // Previous (-10)
+        const prev10Index = (currentIndex - 10 + pokemonListCache.length) % pokemonListCache.length;
+        indicesToCache.push(prev10Index);
+
+        // Remove duplicates and the current index itself
+        const uniqueIndices = [...new Set(indicesToCache)].filter(i => i !== currentIndex);
+
+        // console.log('Pre-caching indices:', uniqueIndices.map(i => i + 1));
+
+        for (const index of uniqueIndices) {
+             const pokemonId = index + 1;
+             const cacheKey = `pokemonDetails_${pokemonId}`;
+             // Only fetch if not already cached
+             if (!localStorage.getItem(cacheKey)) {
+                try {
+                    const pokemonRef = pokemonListCache[index];
+                    if (!pokemonRef) continue; // Skip if index is somehow invalid
+                    const response = await fetch(pokemonRef.url);
+                    if (!response.ok) continue; // Skip on error
+                    const fullPokemonData = await response.json();
+
+                    // Create the smaller object for caching (same as in fetchPokemonDetails)
+                    const pokemonToCache = {
+                        id: fullPokemonData.id,
+                        name: fullPokemonData.name,
+                        sprites: {
+                            front_default: fullPokemonData.sprites.front_default,
+                            versions: { 'generation-v': { 'black-white': { animated: { front_default: fullPokemonData.sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default } } } }
+                        },
+                        types: fullPokemonData.types.map(t => ({ type: { name: t.type.name } })),
+                        stats: fullPokemonData.stats.map(s => ({ base_stat: s.base_stat, stat: { name: s.stat.name } })),
+                        cries: { latest: fullPokemonData.cries?.latest, legacy: fullPokemonData.cries?.legacy }
+                    };
+
+                    localStorage.setItem(cacheKey, JSON.stringify(pokemonToCache));
+                    // console.log(`Pre-cached details for ${pokemonToCache.name}`);
+                 } catch (error) {
+                     // Don't break execution, just log pre-cache error
+                     if (!(error instanceof DOMException && error.name === 'QuotaExceededError')) {
+                          console.warn(`Error pre-caching details for ID ${pokemonId}:`, error);
+                     } // Quota errors are expected eventually, don't log them verbosely
+                 }
+             }
+        }
+    }
 
     // --- Fetch and Display Pokémon Details --- Updated signature
     async function fetchPokemonDetails(url, name, pokemonId) {
@@ -217,7 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
         pokemonNameElement.textContent = pokemon.name;
         pokemonIdElement.textContent = `#${String(pokemon.id).padStart(3, '0')}`;
 
-        // Sprite Loading (no major changes needed here)
+        // Sprite Loading: Hide element until loaded
+        pokemonSpriteElement.style.visibility = 'hidden';
+        pokemonSpriteElement.src = ''; // Clear previous src
+        pokemonSpriteElement.alt = ''; // Clear previous alt
+
         const animatedSprite = pokemon.sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default;
         const defaultSprite = pokemon.sprites.front_default;
         const spriteSrc = animatedSprite || defaultSprite || 'placeholder.png';
@@ -225,17 +361,23 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onload = () => {
             pokemonSpriteElement.src = spriteSrc;
             pokemonSpriteElement.alt = pokemon.name;
-            playPokemonCry(pokemon); // Play cry when sprite loads
-            pokemonSpriteElement.style.display = 'none'; // Hide briefly to reset gif
-             setTimeout(() => { pokemonSpriteElement.style.display = 'block'; }, 10);
+            // playPokemonCry(pokemon); // Play cry when sprite loads
+            // pokemonSpriteElement.style.display = 'none'; // Hide briefly to reset gif - REMOVED
+            // setTimeout(() => { pokemonSpriteElement.style.display = 'block'; }, 10); // REMOVED
+            pokemonSpriteElement.style.visibility = 'visible'; // Make visible only when loaded
         };
         img.onerror = () => {
             pokemonSpriteElement.src = 'placeholder.png';
             pokemonSpriteElement.alt = "Sprite not found";
-            playPokemonCry(pokemon); // Attempt to play cry even if sprite fails
-            pokemonSpriteElement.style.display = 'block';
+            // playPokemonCry(pokemon); // Attempt to play cry even if sprite fails
+            // pokemonSpriteElement.style.display = 'block'; // REMOVED
+            pokemonSpriteElement.style.visibility = 'visible'; // Make visible even on error
         }
         img.src = spriteSrc;
+
+        // Add click listener to sprite to play cry
+        pokemonSpriteElement.removeEventListener('click', handleSpriteClick); // Remove previous listener
+        pokemonSpriteElement.addEventListener('click', handleSpriteClick); // Add listener
 
         // --- Info Screen (Types & Stats - no changes needed here) ---
         // Types
@@ -273,6 +415,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => { statBar.style.width = `${Math.min(percentage, 100)}%`; }, 50);
             });
         });
+    }
+
+    // Define the handler separately to manage listener removal
+    function handleSpriteClick() {
+        // Get data based on the *currently displayed* Pokemon (which is `currentPokemonIndex`)
+        if (currentPokemonIndex === -1) return;
+        const pokemonId = currentPokemonIndex + 1;
+        const cacheKey = `pokemonDetails_${pokemonId}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+            try {
+                const pokemonData = JSON.parse(cachedData);
+                playPokemonCry(pokemonData);
+            } catch(e) {
+                 console.error("Error parsing cached data for sprite click cry playback", e);
+            }
+        } else {
+            console.warn("Cannot play cry on sprite click: Details not cached yet.");
+            // Optionally try fetching just to play cry, but might fail on mobile
+        }
     }
 
     // --- Play Pokemon Cry --- Added this function
@@ -377,7 +539,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Only select if the index actually changed
         if (targetIndex !== currentPokemonIndex) {
-             selectPokemon(targetIndex);
+             // selectPokemon(targetIndex); // Call without the flag
+             selectPokemon(targetIndex); // Call without the flag
         }
     }
 
@@ -387,7 +550,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Optionally use left/right as well (they do the same as up/down here)
     dPadLeft.addEventListener('click', () => navigateList('left'));
     dPadRight.addEventListener('click', () => navigateList('right'));
-
 
     // --- Initial Load ---
     fetchPokemonList();
