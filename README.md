@@ -2,6 +2,7 @@
 
 A front-end web application recreating the look and feel of a classic Pokédex using HTML, CSS, and vanilla JavaScript. It fetches and displays data for the original 151 Pokémon from the public [PokeAPI](https://pokeapi.co/).
 
+[![Screenshot of the Pokedex application](pokedex.png)](pokedex.png)
 
 ## Features
 
