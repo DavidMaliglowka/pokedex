@@ -9,8 +9,9 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: transparent; /* Neutral background */
     display: flex;
+    flex-direction: column; /* Stack items vertically */
     justify-content: center;
-    align-items: center;
+    align-items: center; /* Center items horizontally in column layout */
     min-height: 100vh;
     padding: 20px;
 }
@@ -646,4 +647,21 @@ body {
     .stat-name { flex-basis: 50px; font-size: 0.75em;}
     #pokemon-list li { font-size: 0.85em; padding: 5px 8px;}
     #pokemon-name-id { font-size: 0.8em; }
+}
+
+/* Attribution Footer */
+.attribution {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.85em;
+    color: #555; /* Adjust color as needed */
+}
+
+.attribution a {
+    color: #dc0a2d; /* Pokedex red for links */
+    text-decoration: none;
+}
+
+.attribution a:hover {
+    text-decoration: underline;
 }

@@ -23,6 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const audioConfirm = document.getElementById('audio-confirm');
     const audioCry = document.getElementById('audio-cry'); // Added cry audio element
 
+    // --- Hide attribution if in iframe ---
+    try {
+        const attributionFooter = document.querySelector('.attribution');
+        if (attributionFooter && window.self !== window.top) {
+            attributionFooter.style.display = 'none';
+        }
+    } catch (e) {
+        console.error('Error checking iframe status or hiding footer:', e);
+    }
+    // --- End iframe check ---
+
     const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
     const MAX_POKEMON = 151;
 
