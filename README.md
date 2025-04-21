@@ -26,7 +26,7 @@ A front-end web application recreating the look and feel of a classic Pokédex u
 1.  Clone this repository:
 2.  Open the `index.html` file directly in your web browser.
 
-No build steps or dependencies are required other than a modern web browser with JavaScript enabled.
+No build steps or dependencies are required other than a modern web browser with JavaScript enabled. Simple :)
 
 ## Technical Details
 
