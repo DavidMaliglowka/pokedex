@@ -43,4 +43,11 @@ No build steps or dependencies are required other than a modern web browser with
 
 ---
 
-*This project uses data from the PokeAPI. Pokémon and Pokémon character names are trademarks of Nintendo.*
+*This project uses data from the PokéAPI. Pokémon and Pokémon character names are trademarks of Nintendo.*
+
+## License
+* **Code**: BSD 3‑Clause. See [LICENSE](./LICENSE).
+* **Data & trademarks**: Pokémon assets belong to Nintendo / TPCi.  
+  This is an unofficial fan project — see [NOTICE](./NOTICE) for details.
+  
+  No official Pokémon sprites are stored in this repo.  Asset URLs resolve at run‑time from PokéAPI.

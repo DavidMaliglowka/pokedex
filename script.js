@@ -1,3 +1,9 @@
+/*
+ * Classic Pokédex – BSD‑3‑Clause
+ * Copyright © 2025 David Maliglowka
+ * SPDX‑License‑Identifier: BSD‑3‑Clause
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element References ---
     const pokemonListElement = document.getElementById('pokemon-list');
