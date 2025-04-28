@@ -1,3 +1,9 @@
+/*
+ * Classic Pokédex – BSD‑3‑Clause
+ * Copyright © 2025 David Maliglowka
+ * SPDX‑License‑Identifier: BSD‑3‑Clause
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Element References ---
     const pokemonListElement = document.getElementById('pokemon-list');
@@ -23,8 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const audioConfirm = document.getElementById('audio-confirm');
     const audioCry = document.getElementById('audio-cry'); // Added cry audio element
 
-    // --- Hide attribution if in iframe ---
-    try {
+      // --- Hide attribution if in iframe ---
+      try {
         const attributionFooter = document.querySelector('.attribution');
         if (attributionFooter && window.self !== window.top) {
             attributionFooter.style.display = 'none';
@@ -39,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === Add this to the Pokedex's JavaScript (e.g., script.js) ===
 
-    // --- iframe Controls Configuration ---
+    // --- iframe Controls Configuration (if you embed this Pokedex in an iframe on your own website) ---
     const PARENT_SITE_ORIGIN = 'https://www.davidmaliglowka.com';
 
     // --- Escape Key Listener ---
